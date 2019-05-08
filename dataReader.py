@@ -17,10 +17,7 @@ sys.path.append('.')
 #在GeneratorEnqueuer中定义了多线程获取数据的方法get()，在当前文件最后调用之后返回的是输出网络的数据
 from data_util import GeneratorEnqueuer
 
-training_data_path = './data/2015/ch4_training_images'
-training_anno_path = './data/2015/ch4_training_localization_transcription_gt'
-vocb_path = './data/2015/voc.txt'
-test_data_path = './data/2015/ch4_test_images'
+vocb_path = 'voc.txt'
 text_scale = 224
 avoid_vertText = True
 allow_unknown_char = True
@@ -52,11 +49,11 @@ if allow_unknown_char:
 
 NUM_CLASSES = len(decode_maps)
 
-def get_images():#在后面的generator函数中会使用，获得数据的图片信息
+def get_images(data_path = './data/2015/ch4_training_images'):#在后面的generator函数中会使用，获得数据的图片信息
     """
     获得path目录（文件）下的所有的文件序列，包括子目录
     """
-    path = training_data_path
+    path = data_path
     #支持多种图片格式
     ext=['jpg', 'png', 'jpeg', 'JPG']
     listFiles = []
@@ -687,7 +684,7 @@ def generate_rbox(im_size, polys, tags):
 
         # if geometry == 'RBOX':
         # 对任意两个顶点的组合生成一个平行四边形 - generate a parallelogram for any combination of two vertices
-        fitted_parallelograms = []#?????????????????在干什么
+        fitted_parallelograms = []
         for i in range(4):
             p0 = poly[i]
             p1 = poly[(i + 1) % 4]
@@ -803,7 +800,7 @@ def generate_rbox(im_size, polys, tags):
         outBoxs.append([0, 0, 2 * features_stride, 2 * features_stride]) # keep extract From sharedConv feature map not zero
         cropBoxs.append([0, 0, 2 * features_stride, 2 * features_stride])
         angles.append(0.)
-        text_tags.append([NUM_CLASSES - 1])#有错误？？？？？？？？？？？？？？？？？？？？？？？
+        text_tags.append([NUM_CLASSES - 1])
         recg_masks.append(0.)
 
     outBoxs = np.array(outBoxs, np.int32)
@@ -815,9 +812,9 @@ def generate_rbox(im_size, polys, tags):
     return score_map, geo_map, training_mask, (outBoxs, cropBoxs, angles), text_tags, recg_masks
 
 
-def generator(input_size=224, batch_size=32,random_scale=np.array([0.5, 3.0]),vis=False):
-    image_list = np.array(get_images())
-    anno_path = training_anno_path
+def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',random_scale=np.array([0.5, 3.0]),vis=False):
+    image_list = np.array(get_images(data_path))
+    anno_path = anno_path
     print('anno path {}'.format(anno_path))
 #    image_list = np.array([im_fn for im_fn in image_list if os.path.exists(os.path.join(
 #        anno_path, '%s.%s' % (os.path.basename(im_fn).rpartition('.')[0], FLAGS.ext)))])
@@ -974,7 +971,7 @@ def get_batch(num_workers, **kwargs):
 
 
 if __name__ == '__main__':
-    data_generator_vaild = get_batch(num_workers=1,batch_size=3,vis=False)
+    data_generator_vaild = get_batch(num_workers=1,batch_size=3,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',vis=False)
     images, _, score_maps, geo_maps, training_masks, brboxes, recg_tags, recg_masks = next(data_generator_vaild)
     images = np.array(images)
     print (images.shape,np.array(score_maps).shape,np.array(geo_maps).shape,np.array(training_masks).shape)
