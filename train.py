@@ -85,7 +85,10 @@ saver = tf.train.Saver(tf.global_variables())
 
 #generator,消费者，生产者模型
 import dataReader
-data_generator_vaild = dataReader.get_batch(num_workers=1,batch_size=batchsize,vis=False)
+data_generator_vaild = dataReader.get_batch(num_workers=1,batch_size=batchsize,
+                                            data_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_images',
+                                            anno_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_localization_transcription_gt',
+                                            vis=False)
 
 print("begin")
 for step in range(1,max_steps):
@@ -110,8 +113,9 @@ for step in range(1,max_steps):
     inp_dict[text_lable] = cur_d_btags
 
     # _, total_loss_value, detect_loss_value, recong_loss_value = \
-    total_loss_value = sess.run([total_loss], inp_dict)
-    print(step, "  ", total_loss_value)
+    sess.run(train_step, inp_dict)
     if step%store_step == 0:
-        print(step,"  ", total_loss_value),#detect_loss_value,recong_loss_value)
+        total_loss_value, detect_loss_value, recong_loss_value  = \
+            sess.run([total_loss,dect_loss,recong_loss], inp_dict)
+        print(step,"  ", total_loss_value,detect_loss_value,recong_loss_value)
         saver.save(sess, os.path.join('savemodel', 'model.ckpt'), global_step=step)

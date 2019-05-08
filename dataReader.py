@@ -9,6 +9,7 @@ import matplotlib.patches as Patches
 from shapely.geometry import Polygon
 import random
 import sys
+from PIL import Image as pimage
 
 import tensorflow as tf
 import dect_model
@@ -820,7 +821,7 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
 #        anno_path, '%s.%s' % (os.path.basename(im_fn).rpartition('.')[0], FLAGS.ext)))])
 
     print('{} training images in {}'.format(
-        image_list.shape[0], training_data_path))
+        image_list.shape[0], data_path))
     index = np.arange(0, image_list.shape[0])
     while True:
         np.random.shuffle(index)
@@ -835,10 +836,11 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
         for i in index:
             try:
                 im_fn = image_list[i]
-                im = cv2.imread(im_fn)
+                myimage = pimage.open(im_fn)
 
                 # print im_fn
-                h, w, _ = im.shape
+                h, w = myimage.size
+                im = np.array(myimage)
                 txt_fn = os.path.join(anno_path, 'gt_' + '%s.%s' % (os.path.basename(im_fn).rpartition('.')[0], 'txt'))
                 if not os.path.exists(txt_fn):
                     print('text file {} does not exists'.format(txt_fn))
@@ -971,7 +973,7 @@ def get_batch(num_workers, **kwargs):
 
 
 if __name__ == '__main__':
-    data_generator_vaild = get_batch(num_workers=1,batch_size=3,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',vis=False)
+    data_generator_vaild = get_batch(num_workers=1,batch_size=3,data_path = 'data/2015/ch4_training_images',anno_path = 'data/2015/ch4_training_localization_transcription_gt',vis=False)
     images, _, score_maps, geo_maps, training_masks, brboxes, recg_tags, recg_masks = next(data_generator_vaild)
     images = np.array(images)
     print (images.shape,np.array(score_maps).shape,np.array(geo_maps).shape,np.array(training_masks).shape)
