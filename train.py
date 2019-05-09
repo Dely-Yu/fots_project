@@ -13,14 +13,15 @@ import recong
 import dect_model
 
 
-batchsize = 50
+batchsize = 10
 nb_class = 26+10+1
 lr = 0.005
 text_featuremaps_height = 32
 text_featuremaps_max_width = 80
 nb_featuremap_channel =32
-max_steps = 10000
-store_step = 50
+max_steps = 50000
+store_step = 1000
+showloss_step = 100
 maxlen = 21
 # inp feed_dict
 imgs = tf.placeholder(shape=(None,224,224,3),dtype=tf.float32)
@@ -114,8 +115,10 @@ for step in range(1,max_steps):
 
     # _, total_loss_value, detect_loss_value, recong_loss_value = \
     sess.run(train_step, inp_dict)
+    if step%showloss_step == 0 :
+        total_loss_value, detect_loss_value, recong_loss_value = \
+            sess.run([total_loss, dect_loss, recong_loss], inp_dict)
+        print(step, "  ", total_loss_value, detect_loss_value, recong_loss_value)
+
     if step%store_step == 0:
-        total_loss_value, detect_loss_value, recong_loss_value  = \
-            sess.run([total_loss,dect_loss,recong_loss], inp_dict)
-        print(step,"  ", total_loss_value,detect_loss_value,recong_loss_value)
-        saver.save(sess, os.path.join('savemodel', 'model.ckpt'), global_step=step)
+        saver.save(sess, os.path.join('/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/savemodel', 'model.ckpt'), global_step=step)
