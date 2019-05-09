@@ -13,7 +13,7 @@ import recong
 import dect_model
 
 
-batchsize = 1
+batchsize = 50
 nb_class = 26+10+1
 lr = 0.005
 text_featuremaps_height = 32
@@ -60,7 +60,7 @@ text_featuremaps,ws = roirotate.RoiRotate(features=features,
 
 my_recong_model = recong.recong_model(text_featuremaps_height=text_featuremaps_height,
                                         text_featuremaps_max_width=text_featuremaps_max_width,
-                                        nb_channel=nb_featuremap_channel,mode=0)
+                                        nb_channel=nb_featuremap_channel,nb_class=38,mode=0)
 Model_recong_model = my_recong_model.model()
 seq = Model_recong_model(text_featuremaps)
 ws = tf.cast(tf.div(ws,4),tf.int32)
@@ -74,18 +74,21 @@ total_loss = tf.add(dect_loss,recong_loss,name="total_loss")
 
 # solver & &sess init
 sess = tf.Session()
-sess.run(tf.global_variables_initializer())
 print("*"*10)
-print(tf.global_variables())
+# print(tf.global_variables())
 print("*"*10)
-print(tf.gradients(total_loss,tf.global_variables()))
+# print(tf.gradients(total_loss,tf.global_variables()))
 train_step=tf.train.AdamOptimizer(lr).minimize(total_loss)
 #saver
 saver = tf.train.Saver(tf.global_variables())
+sess.run(tf.global_variables_initializer())
 
 #generator,消费者，生产者模型
 import dataReader
-data_generator_vaild = dataReader.get_batch(num_workers=1,batch_size=batchsize,vis=False)
+data_generator_vaild = dataReader.get_batch(num_workers=1,batch_size=batchsize,
+                                            data_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_images',#'
+                                            anno_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_localization_transcription_gt',
+                                            vis=False)
 
 print("begin")
 for step in range(1,max_steps):
@@ -110,8 +113,9 @@ for step in range(1,max_steps):
     inp_dict[text_lable] = cur_d_btags
 
     # _, total_loss_value, detect_loss_value, recong_loss_value = \
-    total_loss_value = sess.run([total_loss], inp_dict)
-    print(step, "  ", total_loss_value)
+    sess.run(train_step, inp_dict)
     if step%store_step == 0:
-        print(step,"  ", total_loss_value),#detect_loss_value,recong_loss_value)
+        total_loss_value, detect_loss_value, recong_loss_value  = \
+            sess.run([total_loss,dect_loss,recong_loss], inp_dict)
+        print(step,"  ", total_loss_value,detect_loss_value,recong_loss_value)
         saver.save(sess, os.path.join('savemodel', 'model.ckpt'), global_step=step)

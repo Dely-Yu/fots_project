@@ -2,6 +2,7 @@
 import csv
 import cv2
 import time
+import io
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -842,7 +843,6 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
             try:
                 im_fn = image_list[i]
                 im = cv2.imread(im_fn)
-
                 # print im_fn
                 h, w, _ = im.shape
                 txt_fn = os.path.join(anno_path, 'gt_' + '%s.%s' % (os.path.basename(im_fn).rpartition('.')[0], 'txt'))
@@ -958,7 +958,7 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
 
 def get_batch(num_workers, **kwargs):
     try:
-        enqueuer = GeneratorEnqueuer(generator(**kwargs), use_multiprocessing=False)
+        enqueuer = GeneratorEnqueuer(generator(**kwargs), use_multiprocessing=True)
         #print('Generator use 1 batches for buffering, this may take a while, you can tune this yourself.')
         enqueuer.start(max_queue_size=1, workers=num_workers)
         generator_output = None
@@ -977,7 +977,7 @@ def get_batch(num_workers, **kwargs):
 
 
 if __name__ == '__main__':
-    data_generator_vaild = get_batch(num_workers=1,batch_size=5,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',vis=False)
+    data_generator_vaild = get_batch(num_workers=1,batch_size=3,data_path = '/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_images',anno_path = '/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_localization_transcription_gt',vis=False)
     images, _, score_maps, geo_maps, training_masks, brboxes, recg_tags, recg_masks = next(data_generator_vaild)
     images = np.array(images)
     print (images.shape,np.array(score_maps).shape,np.array(geo_maps).shape,np.array(training_masks).shape)
