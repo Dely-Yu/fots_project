@@ -11,7 +11,6 @@ import random
 import sys
 
 import tensorflow as tf
-import dect_model
 sys.path.append('.')
 #GeneratorEnqueuer输入的是当前文件中定义的generator函数，
 #在GeneratorEnqueuer中定义了多线程获取数据的方法get()，在当前文件最后调用之后返回的是输出网络的数据
@@ -93,12 +92,19 @@ def load_annoataion(p):
 
             x1, y1, x2, y2, x3, y3, x4, y4 = list(map(float, line[:8]))
             text_polys.append([[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
-            if label == '*' or label == '###':
+            if label == '*' or label == '###' or label == ',':
                 text_tags.append(None)
-            elif label in CLASSES:
-                text_tags.append(list(map(lambda x: encode_maps.get(x, encode_maps[label]) , label)))
             else:
-                text_tags.append(list(map(lambda x: encode_maps.get(x, NUM_CLASSES-1) , label)))
+                label_tag = []
+                for i in label:
+                    if i in CLASSES:
+                        label_tag.append(list(map(lambda x: encode_maps.get(x, encode_maps[i]) , i))[0])
+                    else:
+                        continue #如果出现不认识的字符，忽略
+                if len(label_tag) != 0:
+                    text_tags.append(label_tag)
+                else:
+                    text_tags.append(None)
 
         return np.array(text_polys, dtype=np.float32), text_tags
 
@@ -800,7 +806,7 @@ def generate_rbox(im_size, polys, tags):
         outBoxs.append([0, 0, 2 * features_stride, 2 * features_stride]) # keep extract From sharedConv feature map not zero
         cropBoxs.append([0, 0, 2 * features_stride, 2 * features_stride])
         angles.append(0.)
-        text_tags.append([NUM_CLASSES - 1])
+        text_tags.append([NUM_CLASSES-2])
         recg_masks.append(0.)
 
     outBoxs = np.array(outBoxs, np.int32)
@@ -820,7 +826,7 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
 #        anno_path, '%s.%s' % (os.path.basename(im_fn).rpartition('.')[0], FLAGS.ext)))])
 
     print('{} training images in {}'.format(
-        image_list.shape[0], training_data_path))
+        image_list.shape[0], data_path))
     index = np.arange(0, image_list.shape[0])
     while True:
         np.random.shuffle(index)
@@ -971,7 +977,7 @@ def get_batch(num_workers, **kwargs):
 
 
 if __name__ == '__main__':
-    data_generator_vaild = get_batch(num_workers=1,batch_size=3,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',vis=False)
+    data_generator_vaild = get_batch(num_workers=1,batch_size=5,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',vis=False)
     images, _, score_maps, geo_maps, training_masks, brboxes, recg_tags, recg_masks = next(data_generator_vaild)
     images = np.array(images)
     print (images.shape,np.array(score_maps).shape,np.array(geo_maps).shape,np.array(training_masks).shape)
