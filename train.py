@@ -13,7 +13,7 @@ import recong
 import dect_model
 
 
-batchsize = 10
+batchsize = 1
 nb_class = 26+10+1
 lr = 0.0005
 text_featuremaps_height = 32
@@ -21,7 +21,7 @@ text_featuremaps_max_width = 80
 nb_featuremap_channel =32
 max_steps = 50000
 store_step = 1000
-showloss_step = 100
+showloss_step = 1
 maxlen = 21
 # inp feed_dict
 imgs = tf.placeholder(shape=(None,224,224,3),dtype=tf.float32)
@@ -91,7 +91,7 @@ data_generator_vaild = dataReader.get_batch(num_workers=1,batch_size=batchsize,
                                             anno_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/test/localization',
                                            vis=False)
 print("load weights")
-saver.restore(sess,'/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/savemodel/248210/model.ckpt')
+#saver.restore(sess,'/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/248210/model.ckpt-10000')
 print("begin")
 for step in range(1,max_steps):
     inp_dict = {}
