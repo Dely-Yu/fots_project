@@ -2,7 +2,6 @@
 import csv
 import cv2
 import time
-import io
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -770,7 +769,9 @@ def generate_rbox(im_size, polys, tags):
         # if the poly is too small, then ignore it during training
         poly_h = min(np.linalg.norm(p0_rect - p3_rect), np.linalg.norm(p1_rect - p2_rect))
         poly_w = min(np.linalg.norm(p0_rect - p1_rect), np.linalg.norm(p2_rect - p3_rect))
-
+#        print('----------------------')
+#        print(min(poly_h, poly_w))
+#        print('-----------------------')
         invaild = (min(poly_h, poly_w) < min_text_size) or tag is None or (avoid_vertText and poly_h > poly_w * 2)
 
         if invaild:
@@ -843,6 +844,8 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
             try:
                 im_fn = image_list[i]
                 im = cv2.imread(im_fn)
+                print('-----------------')
+                print(im_fn)
                 # print im_fn
                 h, w, _ = im.shape
                 txt_fn = os.path.join(anno_path, 'gt_' + '%s.%s' % (os.path.basename(im_fn).rpartition('.')[0], 'txt'))
@@ -853,37 +856,37 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
                 text_polys, text_tags = load_annoataion(txt_fn)
 
                 text_polys, text_tags = check_and_validate_polys(text_polys, text_tags, (h, w))
-                im, text_polys, text_tags = argument(im, text_polys, text_tags)
+                #im, text_polys, text_tags = argument(im, text_polys, text_tags)
                 
-                #为什么要搞这些缩放因子，然后最后又缩放到224
-                rd_scale = np.random.uniform(random_scale[0], random_scale[1])
-                if np.random.random() < 0.5:
-                    random_aspect_scale = np.random.uniform(0.7, 1.4)
-                else:
-                    random_aspect_scale = 1.
-                hr = rd_scale * random_aspect_scale
-                wr = rd_scale
-
-                im = cv2.resize(im, dsize=None, fx=wr, fy=hr)#fx,fy为比例因子
-                text_polys[:, :, 0] *= wr
-                text_polys[:, :, 1] *= hr
-                # pad the image to the training input size or the longer side of image
-                new_h, new_w, _ = im.shape
-                max_h_w_i = np.max([new_h, new_w, input_size])
-                im_padded = np.zeros((max_h_w_i, max_h_w_i, 3), dtype=np.uint8)
-                im_padded[:new_h, :new_w, :] = im.copy()
-                im = im_padded
-                # resize the image to input size
-                new_h, new_w, _ = im.shape
-                resize_h = input_size
-                resize_w = input_size
-                im = cv2.resize(im, dsize=(resize_w, resize_h))
-
-                #记住缩放比例
-                resize_ratio_3_x = resize_w/float(new_w)
-                resize_ratio_3_y = resize_h/float(new_h)
-                text_polys[:, :, 0] *= resize_ratio_3_x
-                text_polys[:, :, 1] *= resize_ratio_3_y
+#                #为什么要搞这些缩放因子，然后最后又缩放到224
+#                rd_scale = np.random.uniform(random_scale[0], random_scale[1])
+#                if np.random.random() < 0.5:
+#                    random_aspect_scale = np.random.uniform(0.7, 1.4)
+#                else:
+#                    random_aspect_scale = 1.
+#                hr = rd_scale * random_aspect_scale
+#                wr = rd_scale
+#
+#                im = cv2.resize(im, dsize=None, fx=wr, fy=hr)#fx,fy为比例因子
+#                text_polys[:, :, 0] *= wr
+#                text_polys[:, :, 1] *= hr
+#                # pad the image to the training input size or the longer side of image
+#                new_h, new_w, _ = im.shape
+#                max_h_w_i = np.max([new_h, new_w, input_size])
+#                im_padded = np.zeros((max_h_w_i, max_h_w_i, 3), dtype=np.uint8)
+#                im_padded[:new_h, :new_w, :] = im.copy()
+#                im = im_padded
+#                # resize the image to input size
+#                new_h, new_w, _ = im.shape
+#                resize_h = input_size
+#                resize_w = input_size
+#                im = cv2.resize(im, dsize=(resize_w, resize_h))
+#
+#                #记住缩放比例
+#                resize_ratio_3_x = resize_w/float(new_w)
+#                resize_ratio_3_y = resize_h/float(new_h)
+#                text_polys[:, :, 0] *= resize_ratio_3_x
+#                text_polys[:, :, 1] *= resize_ratio_3_y
                 new_h, new_w, _ = im.shape
                 score_map, geo_map, training_mask, rbox, text_tags, recg_mask = generate_rbox((new_h, new_w), text_polys, text_tags)
                 
@@ -977,7 +980,7 @@ def get_batch(num_workers, **kwargs):
 
 
 if __name__ == '__main__':
-    data_generator_vaild = get_batch(num_workers=1,batch_size=3,data_path = '/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_images',anno_path = '/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_localization_transcription_gt',vis=False)
+    data_generator_vaild = get_batch(num_workers=1,batch_size=1,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',vis=False)
     images, _, score_maps, geo_maps, training_masks, brboxes, recg_tags, recg_masks = next(data_generator_vaild)
     images = np.array(images)
     print (images.shape,np.array(score_maps).shape,np.array(geo_maps).shape,np.array(training_masks).shape)
