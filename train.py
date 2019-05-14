@@ -13,15 +13,15 @@ import recong
 import dect_model
 
 
-batchsize = 10
+batchsize = 1
 nb_class = 26+10+1
-lr = 0.005
+lr = 0.0005
 text_featuremaps_height = 32
 text_featuremaps_max_width = 80
 nb_featuremap_channel =32
 max_steps = 50000
 store_step = 1000
-showloss_step = 100
+showloss_step = 1
 maxlen = 21
 # inp feed_dict
 imgs = tf.placeholder(shape=(None,224,224,3),dtype=tf.float32)
@@ -87,14 +87,15 @@ sess.run(tf.global_variables_initializer())
 #generator,消费者，生产者模型
 import dataReader
 data_generator_vaild = dataReader.get_batch(num_workers=1,batch_size=batchsize,
-                                            data_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_images',#'
-                                            anno_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/2015/ch4_training_localization_transcription_gt',
-                                            vis=False)
-
+                                            data_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/test/img',
+                                            anno_path='/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/data/test/localization',
+                                           vis=False)
+print("load weights")
+#saver.restore(sess,'/mnt/cephfs_wj/common/videoarch/FOTS_mingyang/248210/model.ckpt-10000')
 print("begin")
 for step in range(1,max_steps):
     inp_dict = {}
-    print(step)
+    #print(step)
     d_images, _, d_score_maps, d_geo_maps, d_training_masks, d_brboxes, d_btags, d_bRecgTags = next(
         data_generator_vaild)
     inp_dict[imgs] = np.array(d_images)
@@ -110,7 +111,7 @@ for step in range(1,max_steps):
 
     cur_d_btags = [j for i in d_btags for j in i]
     cur_d_btags = my_recong_model.sparse_tuple_from_label(cur_d_btags)
-    print(cur_d_btags)
+    #print(cur_d_btags)
     inp_dict[text_lable] = cur_d_btags
 
     # _, total_loss_value, detect_loss_value, recong_loss_value = \
