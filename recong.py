@@ -116,7 +116,7 @@ class recong_model():
         x = Bidirectional(LSTM(256, return_sequences=True), name='bilstm_1')(x)
         x = Dense(256, activation='linear', name='fc_1')(x)
         x = Bidirectional(LSTM(256, return_sequences=True, name='bilstm_2'))(x)
-        seq = Dense(self.nb_class, activation='softmax', name='output')(x)
+        seq = Dense(self.nb_class, activation='linear', name='output')(x)
         print(seq)
         return Model(text_featuremaps, seq)
 

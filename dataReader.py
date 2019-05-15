@@ -524,7 +524,7 @@ def getRotateRect(box):
     box_ = cv2.boxPoints(rect)
     return np.concatenate([rect[0], size]), angle, box_
 
-def generate_roiRotatePara(box, angle, expand_w = 60):
+def generate_roiRotatePara(box, angle, expand_w = 30):
     p0_rect, p1_rect, p2_rect, p3_rect = box#就是论文图中那个粉色的矩形框
     cxy = (p0_rect + p2_rect) / 2.
     size = np.array([np.linalg.norm(p0_rect - p1_rect), np.linalg.norm(p0_rect - p3_rect)])
@@ -773,7 +773,7 @@ def generate_rbox(im_size, polys, tags):
 #        print(min(poly_h, poly_w))
 #        print('-----------------------')
         invaild = (min(poly_h, poly_w) < min_text_size) or tag is None or (avoid_vertText and poly_h > poly_w * 2)
-        print(invaild)
+        #print(invaild)
         invaild = tag is None
 
         if invaild:
@@ -784,10 +784,10 @@ def generate_rbox(im_size, polys, tags):
             roiRotatePara = generate_roiRotatePara(rectange, rotate_angle)
             if roiRotatePara:
                 outBox, cropBox, angle = roiRotatePara
-                if min(cropBox[2:]) > 0:#min_text_size:
+                if min(cropBox[2:]) > min_text_size:
                     w , h = cropBox[2:]
                     textImgW = np.ceil(min(w / float(h) * virtule_RoiHeight, virtule_MaxRoiWidth) / features_stride / width_stride)
-                    if textImgW >0:#= 2 * min(len(tag), LABEL_LEN_UPPER):  # avoid CTC error
+                    if textImgW >2 * min(len(tag), LABEL_LEN_UPPER):  # avoid CTC error
                         outBoxs.append(outBox)
                         cropBoxs.append(cropBox)
                         angles.append(angle)
@@ -826,11 +826,11 @@ def generate_rbox(im_size, polys, tags):
 def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_training_images',anno_path = './data/2015/ch4_training_localization_transcription_gt',random_scale=np.array([0.5, 3.0]),vis=False):
     image_list = np.array(get_images(data_path))
     anno_path = anno_path
-    print('anno path {}'.format(anno_path))
+    #print('anno path {}'.format(anno_path))
 #    image_list = np.array([im_fn for im_fn in image_list if os.path.exists(os.path.join(
 #        anno_path, '%s.%s' % (os.path.basename(im_fn).rpartition('.')[0], FLAGS.ext)))])
 
-    print('{} training images in {}'.format(
+    #print('{} training images in {}'.format(
         image_list.shape[0], data_path))
     index = np.arange(0, image_list.shape[0])
     while True:

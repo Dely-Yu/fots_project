@@ -126,7 +126,7 @@ class dect_model(object):
         #det_trues:type:list shape(2,),content:(pred_sco_map,Fuse_geometry(geo_map+theta_map))
         classification_loss = self.dice_coefficient(det_trues[0], det_preds[0], det_mask)
         # scale classification loss to match the iou loss part
-        classification_loss *= 0.01
+        classification_loss *= 1
 
         # d1 -> top, d2->right, d3->bottom, d4->left
         d1_gt, d2_gt, d3_gt, d4_gt, theta_gt = tf.split(value=det_trues[1], num_or_size_splits=5, axis=3)
@@ -142,7 +142,7 @@ class dect_model(object):
         tf.summary.scalar('geometry_AABB', tf.reduce_mean(L_AABB * det_trues[0] * det_mask))
         tf.summary.scalar('geometry_theta', tf.reduce_mean(L_theta * det_trues[0] * det_mask))
         L_g = L_AABB + 20 * L_theta
-        self.detec_loss = tf.reduce_mean(L_g * det_trues[0] * det_mask) + classification_loss
+        self.detec_loss = tf.reduce_mean(L_g * det_trues[0] * det_mask)*100 + classification_loss
         # self.recg_loss = recong_model.recong_loss(reg_trues,seq_preds,21,recg_mask)
         # self.DandRloss =  FLAGS.beta*self.detec_loss + FLAGS.alpha*recg_loss
 

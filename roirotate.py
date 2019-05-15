@@ -64,7 +64,7 @@ class RoiRotate(object):
         w = tf.minimum(w, self.max_RoiWidth)
         return w
 
-    def __call__(self, brboxes, expand_w=20):
+    def __call__(self, brboxes, expand_w=30):
         paddings = tf.constant([[0, 0], [expand_w, expand_w], [expand_w, expand_w], [0, 0]])
         features_pad = tf.pad(self.features, paddings, "CONSTANT")
         features_pad = tf.expand_dims(features_pad, axis=1)
