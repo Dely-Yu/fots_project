@@ -526,6 +526,7 @@ def getRotateRect(box):
 
 def generate_roiRotatePara(box, angle, expand_w = 60):
     p0_rect, p1_rect, p2_rect, p3_rect = box#就是论文图中那个粉色的矩形框
+	
     cxy = (p0_rect + p2_rect) / 2.
     size = np.array([np.linalg.norm(p0_rect - p1_rect), np.linalg.norm(p0_rect - p3_rect)])
     rrect = np.concatenate([cxy, size])#数组拼接
@@ -875,12 +876,12 @@ def generator(input_size=224, batch_size=32,data_path = './data/2015/ch4_trainin
 #                im = im_padded
 #                # resize the image to input size
 #                new_h, new_w, _ = im.shape
-#                resize_h = input_size
-#                resize_w = input_size
-#                im = cv2.resize(im, dsize=(resize_w, resize_h))
+                resize_h = input_size
+                resize_w = input_size
+                im = cv2.resize(im, dsize=(resize_w, resize_h))
 #
 #                #记住缩放比例
-#                resize_ratio_3_x = resize_w/float(new_w)
+#                resize_ratio_3_x = resize_w/float( )
 #                resize_ratio_3_y = resize_h/float(new_h)
 #                text_polys[:, :, 0] *= resize_ratio_3_x
 #                text_polys[:, :, 1] *= resize_ratio_3_y
